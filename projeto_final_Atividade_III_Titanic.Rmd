@@ -1,0 +1,205 @@
+---
+title: "Projeto Final"
+author: "Laíla Luana Campos"
+date: "11/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<div style="text-align: justify"> 
+
+
+**Projeto III: Titanic**
+
+[Modelos para previsão de sobreviventes do Titanic](#heading-3)
+
+Fazer um modelo focado no aprendizado de máquina para criar um modelo que preveja quais passageiros sobreviveram ao naufrágio do Titanic.
+
+O conjunto *Titanic* conta com 12 variáveis em 891 observações. Sendo elas:
+
+* Identificação do passageiro (*PassengerId*);
+* Sobrevivência (*Survived*);
+* Classe do passegeiro (*Pclass*);
+* Nome do passageiro(*Name*);
+* Sexo (*Sex*);
+* Idade (*Age*);
+* Número de irmão ou cônjuges a bordo (*SibSp*);
+* Número de filhos ou pais (*Parch*);
+* Número do bilhete (*Ticket*);
+* Tarifa (*Fare*);
+* Cabine (*Cabin*);
+* Porto de embarque (*Embarked*).
+
+Previsão de sobreviventes:
+
+```{r, include=T, message=F, fig.align='center'}
+
+treino <- read.csv("train.csv")
+teste <- read.csv("test.csv")
+#names(treino)
+( submissao_1 <- data.frame(PassengerId=teste$PassengerId, Survived=0) )
+
+```
+
+Quantidade de Sobreviventes (1) e de Mortos (0)
+
+```{r, include=T, message=F, fig.align='center'}
+
+table(treino$Survived)
+
+```
+
+
+Proporção de Sobreviventes (1) e de Mortos (0)
+
+```{r, include=T, message=F, fig.align='center'}
+
+(prop.table(table(treino$Survived)) )
+
+```
+
+*Previsão de sobreviventes segundo o sexo:*
+
+Proporção de homens Sobreviventes (1) e de Mortos (0):
+
+```{r, include=T, message=F, fig.align='center'}
+
+homens <- treino[treino$Sex == "male", ]
+prop.table(table(homens$Survived))
+
+```
+
+Proporção de mulheres Sobreviventes (1) e de Mortas (0):
+
+```{r, include=T, message=F, fig.align='center'}
+
+mulheres <- treino[treino$Sex == "female", ]
+prop.table(table(mulheres$Survived))
+
+```
+
+Então, apenas $18,89\%$ dos homens sobreviveram, e $74,20\%$ das mulheres sobreviveram.
+
+*Proporção de crianças Sobreviventes (1) e de Mortas (0):*
+
+```{r, include=T, message=F, fig.align='center'}
+passageiros.com.idade <- treino[!is.na(treino$Age),]
+idade.media <- mean(passageiros.com.idade$Age)
+#treino[is.na(treino$Age), ]$Age <- idade.media
+criancas <- treino[treino$Age < 5, ] 
+prop.table(table(criancas$Survived))
+
+```
+
+Portanto, observa-se que $67,5\%$ das crianças sobreviveram.
+
+```{r, include=T, message=F, fig.align='center'}
+teste[is.na(teste$Age), ]$Age <- idade.media
+teste$Survived <- 0
+teste[teste$Sex=="female",]$Survived <- 1
+teste[teste$Age < 5,]$Survived <- 1
+
+( submissao_2 <- data.frame(PassengerId=teste$PassengerId, Survived=teste$Survived) )
+
+```
+
+*Proporção de Sobreviventes (1) e de Mortos (0) por classes:*
+
+Média das classes:
+
+```{r, include=T, message=F, fig.align='center'}
+passageiros.classe <- treino[!is.na(treino$Pclass),]
+( classe.media <- mean(passageiros.classe$Pclass)) 
+
+```
+
+Proporção de Sobreviventes (1) e de Mortos (0) da classe 1:
+
+```{r, include=T, message=F, fig.align='center'}
+
+classe_1 <- treino[treino$Pclass == 1, ] 
+prop.table(table(classe_1$Survived))
+
+```
+
+Proporção de Sobreviventes (1) e de Mortos (0) da classe 2:
+
+```{r, include=T, message=F, fig.align='center'}
+
+classe_2 <- treino[treino$Pclass == 2, ] 
+prop.table(table(classe_2$Survived))
+
+```
+
+Proporção de Sobreviventes (1) e de Mortos (0) da classe 3:
+
+```{r, include=T, message=F, fig.align='center'}
+
+
+classe_3 <- treino[treino$Pclass == 3, ] 
+prop.table(table(classe_3$Survived))
+
+```
+
+Portanto, observa-se que houve maior proporção de sobreviventes na classe 1 ($63\%$), seguida pela classe 2 ($47,28\%$). A classe 3 apresentou apenas $24,24\%$ de sobreviventes.
+
+*Proporção de Sobreviventes (1) e de Mortos (0) por tarifas:*
+
+Média das tarifas:
+
+```{r, include=T, message=F, fig.align='center'}
+
+passageiros.tarifa <- treino[!is.na(treino$Fare),]
+( tarifa.media <- mean(passageiros.tarifa$Fare)) 
+
+```
+
+Proporção de Sobreviventes (1) e de Mortos (0) que pagaram menos que a tarifa média:
+
+```{r, include=T, message=F, fig.align='center'}
+
+tarifas_menores_media <- treino[treino$Fare < tarifa.media, ] 
+prop.table(table(tarifas_menores_media$Survived))
+
+```
+
+
+Proporção de Sobreviventes (1) e de Mortos (0) que pagaram menos que a tarifa média:
+
+```{r, include=T, message=F, fig.align='center'}
+
+tarifas_maiores_media <- treino[treino$Fare > tarifa.media, ] 
+prop.table(table(tarifas_maiores_media$Survived))
+
+```
+
+Portanto, $31,76\%$ das pessoas que pagaram a tarifa menor que a tarifa média sobreviveram, enquanto que $59,72\%$ das pessoas que pagaram a tarifa maior que a tarifa média sobreviveram.
+
+*Previsão de sobreviventes segundo o sexo, a idade, a classe e a tarifa paga:*
+
+```{r, include=T, message=F, fig.align='center'}
+
+# install.packages("rpart")
+
+library(rpart)
+
+arvore <- rpart(Survived ~ Age + Sex + Pclass + Fare, data=treino, method="class")
+print(arvore)
+
+#install.packages("rattle")
+#install.packages("RColorBrewer")
+
+library(rattle)
+library(RColorBrewer)
+
+fancyRpartPlot(arvore)
+submissao_3 = data.frame(PassengerId=teste$PassengerId, Survived=teste$Survived)
+previsao_3 = predict(arvore, teste, type="class")
+( submissao_3$Survived = previsao_3 )
+
+```
+
+
